@@ -18,7 +18,7 @@ class Button {
         ellipseMode(CENTER);
     }
   
-    boolean isOverStartButton() {
+    boolean isOverButton() {
         float disX = this.buttonX - mouseX;
         float disY = this.buttonY - mouseY;
 
@@ -31,11 +31,11 @@ class Button {
     }
   
     void drawButton() {
-        if (this.isButtonPressed) {
-            fill(this.buttonFinalColor);  
+        if (this.isOverButton()) {
+            fill(this.buttonHoverColor);  
         }
-        else if (this.isOverStartButton()) {
-            fill(this.buttonHoverColor);
+        else if (this.isButtonPressed) {
+            fill(this.buttonFinalColor);
         }
         else {
             fill(this.buttonInitColor);
@@ -44,8 +44,13 @@ class Button {
         ellipse(this.buttonX, this.buttonY, this.buttonSize, this.buttonSize);
     }
   
-    void press() {
-        this.isButtonPressed = true;
+    void toggle() {
+        if (this.isButtonPressed == false ) {
+            this.isButtonPressed = true;
+        }
+        else {
+            this.isButtonPressed = false;
+        }
     }
   
     boolean isPressed() {

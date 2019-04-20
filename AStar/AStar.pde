@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 
@@ -28,15 +29,16 @@ PriorityQueue<Square> minPQ;
 
 
 // Boolean to indicate if the search is over or not
-boolean isOver;
+boolean isSearchOver;
 
 // Start button
 Button startButton;
 
-// Setup
-void setup() {
-    size(900, 700);
-  
+
+//----------------------------------------------------------------------------------------------------------
+// Initialize
+//----------------------------------------------------------------------------------------------------------
+void init() {
     // Assign start position
     startPos    = new int[2];
     startPos[0] = rows/2;
@@ -79,15 +81,66 @@ void setup() {
     minPQ.add(grid[startPos[0]][startPos[1]]);
   
     // Initialize isOver to false
-    isOver = false;
+    isSearchOver = false;
   
   
     // Start button
     startButton = new Button(800, 350, 50);
 }
 
+// Assign reachable neighbors to each squares
+void assignNeighbors() {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            // Up
+            if (i > 0) {
+                if (!grid[i-1][j].isBlocked()) {
+                    grid[i][j].addNeighbor(grid[i-1][j]);
+                }
+            }
+          
+            // Down
+            if (i < rows-1) {
+                if (!grid[i+1][j].isBlocked()) {
+                    grid[i][j].addNeighbor(grid[i+1][j]);
+                }
+            }
+          
+            // Left
+            if (j > 0) {
+                if (!grid[i][j-1].isBlocked()) {
+                    grid[i][j].addNeighbor(grid[i][j-1]);
+                }
+            }
+          
+            // Right
+            if (j < cols-1) {
+                if (!grid[i][j+1].isBlocked()) {
+                    grid[i][j].addNeighbor(grid[i][j+1]);
+                }
+            }
+        }
+    }
+}
+//----------------------------------------------------------------------------------------------------------
 
-// Draw loop
+
+
+//----------------------------------------------------------------------------------------------------------
+// Setup
+//----------------------------------------------------------------------------------------------------------
+void setup() {
+    size(900, 700);
+  
+    init();
+}
+//----------------------------------------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------------------------------------
+// Loop
+//----------------------------------------------------------------------------------------------------------
 void draw() {
     background(255);
     drawGrid();
@@ -98,14 +151,14 @@ void draw() {
     }
   
     // if openSet is not empty and the search is not over, continue calculation
-    if (!openSet.isEmpty() && !isOver) { 
+    if (!openSet.isEmpty() && !isSearchOver) { 
         // current = the node in openSet with LOWEST f value
         Square current = minPQ.poll();
     
         // If current = endPos, then the search is over
         // Print path
         if (current == grid[endPos[0]][endPos[1]]) {
-            isOver = true;
+            isSearchOver = true;
             traceBestPath();
         }
     
@@ -147,6 +200,8 @@ void draw() {
         // done  
     }
 }
+//----------------------------------------------------------------------------------------------------------
+
 
 
 // Trace the best path
@@ -159,41 +214,6 @@ void traceBestPath() {
     }
 }
 
-
-// Assign reachable neighbors to each squares
-void assignNeighbors() {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            // Up
-            if (i > 0) {
-                if (!grid[i-1][j].isBlocked()) {
-                    grid[i][j].addNeighbor(grid[i-1][j]);
-                }
-            }
-          
-            // Down
-            if (i < rows-1) {
-                if (!grid[i+1][j].isBlocked()) {
-                    grid[i][j].addNeighbor(grid[i+1][j]);
-                }
-            }
-          
-            // Left
-            if (j > 0) {
-                if (!grid[i][j-1].isBlocked()) {
-                    grid[i][j].addNeighbor(grid[i][j-1]);
-                }
-            }
-          
-            // Right
-            if (j < cols-1) {
-                if (!grid[i][j+1].isBlocked()) {
-                    grid[i][j].addNeighbor(grid[i][j+1]);
-                }
-            }
-        }
-    }
-}
 
 
 //----------------------------------------------------------------------------------------------------------
@@ -289,6 +309,27 @@ void drawGrid() {
 
 
 //----------------------------------------------------------------------------------------------------------
+// Reset
+//----------------------------------------------------------------------------------------------------------
+void reset() {
+    // Remove existing variables
+    for (int i = 0; i < rows; i++) {
+        Arrays.fill(grid[i], null);
+    }
+    grid = null;
+    
+    closedSet.clear();
+    openSet.clear();
+    minPQ.clear();
+    
+    // Run initializer
+    init();
+}
+//----------------------------------------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------------------------------------
 // Mouse Event Handler
 //----------------------------------------------------------------------------------------------------------
 void mousePressed() {
@@ -298,10 +339,21 @@ void mousePressed() {
   
         block(y, x);
     }
-    else if (startButton.isOverStartButton()) {
-        startButton.press();
-        // Start simulation: assign reachable neighbors to each squares
-        assignNeighbors();
+    else if (startButton.isOverButton()) {
+        if (!startButton.isPressed()) {
+            // Start button is pressed
+            startButton.toggle();
+            
+            // Before starting simulation, assign reachable neighbors to each squares
+            assignNeighbors();
+        }
+        else {
+            // Button is pressed again after start
+            // Stop the simulation and reset variables
+            startButton.toggle();
+            reset();
+        }
+        
     }
 }
 
